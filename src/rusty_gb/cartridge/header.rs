@@ -24,53 +24,97 @@ pub struct CartridgeHeader {
 const ROM_SIZES: [u8; 6] = [0, 2, 8, 32, 128, 64];
 
 impl CartridgeHeader {
-    pub fn new(rom_data: Option<Vec<u8>>) -> CartridgeHeader {
-        return CartridgeHeader {
-            entry: [0; 4],
-            nintendo_logo: [0; 48],
-            title: [0; 16],
-            new_licensee_code: 0 as u16,
-            sgb_flag: 0,
-            cartridge_type: 0,
-            rom_size: 0,
-            ram_size: 0,
-            dest_code: 0,
-            licencee_code: vec![0, 0],
-            version: 0,
-            checksum: 0,
-            checksum_passed: false,
-            global_checksum: 0,
-            gbc_flag: 0,
-        };
+    pub fn new(rom_data: Option<&Vec<u8>>) -> CartridgeHeader {
+        if rom_data.is_none() {
+            return CartridgeHeader {
+                entry: [0; 4],
+                nintendo_logo: [0; 48],
+                title: [0; 16],
+                new_licensee_code: 0 as u16,
+                sgb_flag: 0,
+                cartridge_type: 0,
+                rom_size: 0,
+                ram_size: 0,
+                dest_code: 0,
+                licencee_code: vec![0, 0],
+                version: 0,
+                checksum: 0,
+                checksum_passed: false,
+                global_checksum: 0,
+                gbc_flag: 0,
+            };
+        } else {
+            return CartridgeHeader::load_cartidge_header_from_rom_data(&rom_data.unwrap());
+        }
     }
 
-    pub fn load_header(&mut self, rom_data: &[u8]) {
-        self.nintendo_logo = rom_data[0x103..=0x132]
+    fn load_cartidge_header_from_rom_data(rom_data: &[u8]) -> CartridgeHeader {
+        let nintendo_logo = rom_data[0x104..=0x133]
             .try_into()
             .expect("slice with incorrect length");
 
-        self.title = rom_data[0x133..=0x142].try_into().expect("re");
-        self.licencee_code = CartridgeHeader::load_licencee_code(rom_data);
-        self.cartridge_type = rom_data[0x146];
+        let title = rom_data[0x134..=0x143].try_into().expect("re");
+        let licencee_code = CartridgeHeader::load_licencee_code(rom_data);
+        let cartridge_type = rom_data[0x147];
 
-        self.gbc_flag = rom_data[0x142];
-        self.sgb_flag = rom_data[0x145];
+        let gbc_flag = rom_data[0x143];
+        let sgb_flag = rom_data[0x146];
 
-        self.rom_size = rom_data[0x147];
-        self.ram_size = rom_data[0x148];
+        let rom_size = rom_data[0x148];
+        let ram_size = rom_data[0x149];
 
-        self.dest_code = rom_data[0x149];
-        self.version = rom_data[0x014B];
+        let dest_code = rom_data[0x14A];
+        let version = rom_data[0x014C];
 
-        self.checksum = rom_data[0x14C];
-        self.checksum_passed = CartridgeHeader::calculate_checksum(self.checksum, rom_data);
-        self.print_cartridge_header();
+        let checksum = rom_data[0x14D];
+        let checksum_passed = CartridgeHeader::calculate_checksum(checksum, rom_data);
+
+        return CartridgeHeader {
+            entry: [0; 4],
+            nintendo_logo: nintendo_logo,
+            title: title,
+            new_licensee_code: 0,
+            sgb_flag: sgb_flag,
+            cartridge_type: cartridge_type,
+            rom_size: rom_size,
+            ram_size: ram_size,
+            dest_code: dest_code,
+            licencee_code: licencee_code,
+            version: version,
+            checksum: checksum,
+            checksum_passed: checksum_passed,
+            global_checksum: 0,
+            gbc_flag: gbc_flag,
+        };
     }
 
+    // pub fn load_header(&mut self, rom_data: &[u8]) {
+    //     self.nintendo_logo = rom_data[0x103..=0x132]
+    //         .try_into()
+    //         .expect("slice with incorrect length");
+
+    //     self.title = rom_data[0x133..=0x142].try_into().expect("re");
+    //     self.licencee_code = CartridgeHeader::load_licencee_code(rom_data);
+    //     self.cartridge_type = rom_data[0x146];
+
+    //     self.gbc_flag = rom_data[0x142];
+    //     self.sgb_flag = rom_data[0x145];
+
+    //     self.rom_size = rom_data[0x147];
+    //     self.ram_size = rom_data[0x148];
+
+    //     self.dest_code = rom_data[0x149];
+    //     self.version = rom_data[0x014B];
+
+    //     self.checksum = rom_data[0x14C];
+    //     self.checksum_passed = CartridgeHeader::calculate_checksum(self.checksum, rom_data);
+    //     self.print_cartridge_header();
+    // }
+
     fn load_licencee_code(header_bytes: &[u8]) -> Vec<u8> {
-        let old_licencee_code = header_bytes[0x14a];
+        let old_licencee_code = header_bytes[0x14B];
         if old_licencee_code == 0x33 {
-            return header_bytes[0x143..=0x144].try_into().expect("msg");
+            return header_bytes[0x144..=0x145].try_into().expect("msg");
         } else {
             return vec![old_licencee_code];
         }
@@ -99,7 +143,7 @@ impl CartridgeHeader {
 
     fn calculate_checksum(checksum_byte: u8, rom_data: &[u8]) -> bool {
         let mut checksum: u8 = 0;
-        for address in 0x0133..=0x014b {
+        for address in 0x0134..=0x014C {
             checksum = checksum.wrapping_sub(rom_data[address]);
             checksum = checksum.wrapping_sub(1);
         }
@@ -117,7 +161,7 @@ impl CartridgeHeader {
             licencee_code_concat = self.licencee_code[0];
         }
 
-        println!("HEADER LOADED:");
+        println!("CARTRIDGE HEADER:");
         self.print_title(false);
         println!("\tVERSION NUMBER: {}", self.version);
 
@@ -143,7 +187,7 @@ impl CartridgeHeader {
             } else if self.dest_code == 0x01 {
                 "Overseas only"
             } else {
-                panic!("Invalid dest code");
+                panic!("Invalid dest code {:#04x}", self.dest_code);
             }
         );
         println!(

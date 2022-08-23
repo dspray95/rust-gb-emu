@@ -7,13 +7,19 @@ pub struct Bus {
 }
 
 impl Bus {
-    fn new(cartridge: Option<Cartridge>) -> Bus {
-        return Bus {
-            cartridge: Cartridge::new(),
-        };
+    pub fn new(cartridge: Option<Cartridge>) -> Bus {
+        if cartridge.is_none() {
+            return Bus {
+                cartridge: Cartridge::new(None),
+            };
+        } else {
+            return Bus {
+                cartridge: cartridge.unwrap(),
+            };
+        }
     }
 
-    fn read(&mut self, address: u16) -> u8 {
+    pub fn read(&mut self, address: u16) -> u8 {
         if address < 0x8000 {
             return self.cartridge.read(address);
         }
@@ -21,7 +27,7 @@ impl Bus {
         NO_IMPL!();
     }
 
-    fn write(&mut self, address: u16, value: u8) {
+    pub fn write(&mut self, address: u16, value: u8) {
         if address < 0x8000 {
             self.cartridge.write(address, value);
             return;

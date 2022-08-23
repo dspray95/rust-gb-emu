@@ -16,7 +16,7 @@ use self::header::CartridgeHeader;
 pub struct Cartridge {
     pub rom_path: String,
     rom_data: Vec<u8>,
-    rom_header: header::CartridgeHeader,
+    pub rom_header: header::CartridgeHeader,
 }
 
 impl Cartridge {
@@ -35,30 +35,19 @@ impl Cartridge {
     fn load_cartridge(filepath: String) -> Cartridge {
         println!("loading cartridge from {}...", filepath);
 
-        let mut file = match File::open(&filepath) {
+        let file = match File::open(&filepath) {
             Err(why) => panic!("couldn't open {}: {}", filepath, why),
             Ok(file) => file,
         };
-        let mut file = BufReader::new(file);
+        let file = BufReader::new(file);
         let rom_data = Cartridge::read_instructions_to_end(file).unwrap();
-        let rom_header = CartridgeHeader::new(Some(rom_data));
+        let rom_header = CartridgeHeader::new(Some(&rom_data));
+        println!("...done!");
         return Cartridge {
             rom_path: filepath,
             rom_data: rom_data,
             rom_header: rom_header,
         };
-    }
-
-    pub fn load(&mut self) -> Result<(), std::io::Error> {
-        println!("loading cartridge from {}...", self.rom_path);
-        let f = File::open(&self.rom_path)?;
-        let mut f = BufReader::new(f);
-        f.read_u8()?;
-
-        self.rom_data = Cartridge::read_instructions_to_end(f)?;
-        self.rom_header.load_header(&self.rom_data);
-
-        Ok(())
     }
 
     pub fn read(&mut self, address: u16) -> u8 {
@@ -69,31 +58,6 @@ impl Cartridge {
     pub fn write(&mut self, address: u16, value: u8) {
         //only supports ROM ONLY for now...
         NO_IMPL!();
-    }
-
-    pub fn with_rom_path(rom_path: String) -> Cartridge {
-        let header = header::CartridgeHeader {
-            entry: [0, 0, 0, 0],
-            nintendo_logo: [0; 0x30],
-            title: [0; 0x10],
-            new_licensee_code: 0,
-            sgb_flag: 0,
-            cartridge_type: 0,
-            rom_size: 0,
-            ram_size: 0,
-            dest_code: 0,
-            licencee_code: vec![0, 0],
-            version: 0,
-            checksum: 0,
-            checksum_passed: false,
-            global_checksum: 0,
-            gbc_flag: 0,
-        };
-        return Cartridge {
-            rom_path: rom_path,
-            rom_data: Vec::new(),
-            rom_header: header,
-        };
     }
 
     fn read_instructions_to_end<R>(mut rdr: R) -> io::Result<Vec<u8>>

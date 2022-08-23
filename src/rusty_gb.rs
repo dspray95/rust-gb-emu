@@ -1,25 +1,19 @@
 mod bus;
 mod cartridge;
 mod cpu;
-mod emulator_context;
+mod emulator;
 
-use cartridge::Cartridge;
-use emulator_context::EmulatorContext;
+use emulator::Emulator;
 use std::env;
 
-pub fn emulator_run() -> i64 {
-    let args: Vec<String> = env::args().collect();
+pub fn run() -> i64 {
+    let args = env::args().collect();
     if !parse_args(&args) {
         return 1;
     }
 
-    let rom_path = args[1].clone();
-
-    let mut cartridge: Cartridge = Cartridge::with_rom_path(rom_path);
-    cartridge.load().unwrap();
-
-    let emulator_context = EmulatorContext::get_emulator_context();
-
+    let mut emulator: Emulator = Emulator::new();
+    emulator.run(args[1].clone());
     return 0;
 }
 
