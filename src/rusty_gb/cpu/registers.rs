@@ -1,6 +1,4 @@
-use crate::rusty_gb::cartridge;
-
-use super::{instructions::instruction::RegisterType as RT, Cpu};
+use super::{instructions::instruction::RegisterType as RT};
 
 pub struct CpuRegisters {
     pub a: u8,
@@ -45,13 +43,17 @@ impl CpuRegisters {
             RT::E => return self.e.into(),
             RT::H => return self.h.into(),
             RT::L => return self.l.into(),
-            RT::AF => todo!(),
-            RT::BC => todo!(),
-            RT::DE => todo!(),
-            RT::HL => todo!(),
+            RT::AF => CpuRegisters::reverse(self.a as u16),
+            RT::BC => CpuRegisters::reverse(self.b as u16),
+            RT::DE => CpuRegisters::reverse(self.d as u16),
+            RT::HL => CpuRegisters::reverse(self.h as u16),
             RT::PC => return self.pc,
             RT::SP => return self.sp,
             RT::NONE => todo!(),
         }
+    }
+
+    pub fn print_registers(&self){
+        println!()
     }
 }

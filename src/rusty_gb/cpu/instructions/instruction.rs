@@ -7,7 +7,24 @@ pub enum InstructionType {
     LD,
     XOR,
     DEC,
+    DI
 }
+
+impl InstructionType {
+    pub fn print(instruction_type: InstructionType){
+        match instruction_type { 
+            InstructionType::NONE => println!("NONE"),
+            InstructionType::NOP => println!("NOP"),
+            InstructionType::JP => println!("JP"),
+            InstructionType::LD => println!("LD"),
+            InstructionType::XOR => println!("XOR"),
+            InstructionType::DEC => println!("DEC"),
+            InstructionType::DI => println!("DI"),
+            _ => panic!("Invalid instruction type")
+        }
+    }
+}
+
 #[derive(Clone, Copy)]
 pub enum ConditionType {
     NONE,
