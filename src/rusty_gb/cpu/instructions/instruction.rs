@@ -7,12 +7,12 @@ pub enum InstructionType {
     LD,
     XOR,
     DEC,
-    DI
+    DI,
 }
 
 impl InstructionType {
-    pub fn print(instruction_type: InstructionType){
-        match instruction_type { 
+    pub fn print(instruction_type: InstructionType) {
+        match instruction_type {
             InstructionType::NONE => println!("NONE"),
             InstructionType::NOP => println!("NOP"),
             InstructionType::JP => println!("JP"),
@@ -20,7 +20,20 @@ impl InstructionType {
             InstructionType::XOR => println!("XOR"),
             InstructionType::DEC => println!("DEC"),
             InstructionType::DI => println!("DI"),
-            _ => panic!("Invalid instruction type")
+            _ => panic!("Invalid instruction type"),
+        }
+    }
+
+    pub fn to_string(instruction_type: InstructionType) -> String {
+        match instruction_type {
+            InstructionType::NONE => return String::from("NONE"),
+            InstructionType::NOP => return String::from("NOP"),
+            InstructionType::JP => return String::from("JP"),
+            InstructionType::LD => return String::from("LD"),
+            InstructionType::XOR => return String::from("XOR"),
+            InstructionType::DEC => return String::from("DEC"),
+            InstructionType::DI => return String::from("DI"),
+            _ => panic!("Invalid instruction type"),
         }
     }
 }

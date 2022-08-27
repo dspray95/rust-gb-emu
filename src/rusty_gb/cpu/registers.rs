@@ -1,4 +1,4 @@
-use super::{instructions::instruction::RegisterType as RT};
+use super::instructions::instruction::RegisterType as RT;
 
 pub struct CpuRegisters {
     pub a: u8,
@@ -24,7 +24,7 @@ impl CpuRegisters {
             e: 0,
             h: 0,
             l: 0,
-            pc: 0,
+            pc: 0x100,
             sp: 0,
         };
     }
@@ -49,11 +49,11 @@ impl CpuRegisters {
             RT::HL => CpuRegisters::reverse(self.h as u16),
             RT::PC => return self.pc,
             RT::SP => return self.sp,
-            RT::NONE => todo!(),
+            RT::NONE => return 0,
         }
     }
 
-    pub fn print_registers(&self){
+    pub fn print_registers(&self) {
         println!()
     }
 }
