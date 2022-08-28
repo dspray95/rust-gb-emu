@@ -1,36 +1,60 @@
 use std::os::windows::process;
 
-use super::{instructions::instruction::InstructionType, Cpu};
+use rust_gbe::emulator_cycles;
 
-pub fn process_none(cpu: Cpu, b: Option<u8>) {
+use crate::rusty_gb::emulator;
+
+// use super::super::emulator::Emulator::emulator_cycles;
+use super::instructions::instruction::{ConditionType, InstructionType};
+use super::Cpu;
+
+type Processor = fn(&mut Cpu);
+
+pub fn process_none(_cpu: &mut Cpu) {
     panic!("Invalid instruction type!")
 }
 
-pub fn process_nop(cpu: Cpu, b: Option<u8>) {
+pub fn process_nop(_cpu: &mut Cpu) {
     return;
 }
 
-pub fn process_xor(mut cpu: Cpu, b: Option<u8>) {
-    cpu.registers.a ^= b.unwrap() & 0xFF;
+pub fn process_xor(cpu: &mut Cpu) {
+    cpu.registers.a ^= cpu.registers.b & 0xFF;
 }
 
-pub fn process_jp(cpu: Cpu, b: Option<u8>) {
+pub fn process_jp(cpu: &mut Cpu) {
+    if check_condition(cpu) {
+        cpu.registers.pc = cpu.fetched_data;
+        emulator_cycles(1)
+    }
+}
+
+pub fn process_ld(cpu: &mut Cpu) {
     return;
 }
 
-pub fn process_ld(cpu: Cpu, b: Option<u8>) {
+pub fn process_dec(cpu: &mut Cpu) {
     return;
 }
 
-pub fn process_dec(cpu: Cpu, b: Option<u8>) {
+pub fn process_di(cpu: &mut Cpu) {
     return;
 }
 
-pub fn process_di(cpu: Cpu, b: Option<u8>) {
-    return;
+fn check_condition(cpu: &Cpu) -> bool {
+    let z = cpu.get_cpu_flag(super::Flag::Z);
+    let c = cpu.get_cpu_flag(super::Flag::C);
+    match cpu.current_instruction.condition_type {
+        ConditionType::NONE => return true,
+        ConditionType::NZ => return !z,
+        ConditionType::Z => return z,
+        ConditionType::NC => return !c,
+        ConditionType::C => return c,
+        _ => return false,
+    }
 }
 
-pub fn get_processor(instruction_type: InstructionType) -> fn(Cpu, Option<u8>) {
+pub fn get_processor(instruction_type: InstructionType) -> Processor {
     match instruction_type {
         InstructionType::NOP => return process_nop,
         InstructionType::NONE => return process_none,

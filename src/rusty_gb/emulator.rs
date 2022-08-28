@@ -32,8 +32,4 @@ impl Emulator {
         }
         return 0;
     }
-
-    pub fn emulator_cycles(cpu_cycles: i64) {
-        return;
-    }
 }

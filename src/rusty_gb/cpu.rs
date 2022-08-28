@@ -5,12 +5,13 @@ use core::panic;
 use instructions::instruction::Instruction;
 // use processors::get_processors;
 use registers::CpuRegisters;
+use rust_gbe::{bit, emulator_cycles};
 
 // use self::instructions::Instructions;
 
 use self::instructions::{
     get_instructions,
-    instruction::{AddressingMode, InstructionType, RegisterType},
+    instruction::{AddressingMode, InstructionType},
 };
 
 use super::{bus::Bus, emulator::Emulator};
@@ -67,9 +68,9 @@ impl Cpu {
             }
             AddressingMode::D16 => {
                 let lo = self.bus.read(self.registers.pc);
-                Emulator::emulator_cycles(1);
+                emulator_cycles(1);
                 let hi: u8 = self.bus.read(self.registers.pc + 1);
-                Emulator::emulator_cycles(1);
+                emulator_cycles(1);
                 self.fetched_data = lo as u16 | ((hi as u16) << 8);
                 self.registers.pc += 2;
 
@@ -77,7 +78,7 @@ impl Cpu {
             }
             AddressingMode::R_D8 => {
                 self.fetched_data = self.bus.read(self.registers.pc) as u16;
-                Emulator::emulator_cycles(1);
+                emulator_cycles(1);
                 self.registers.pc += 1;
                 return;
             }
@@ -91,6 +92,7 @@ impl Cpu {
             self.current_opcode, self.registers.pc
         );
         let processor = processors::get_processor(self.current_instruction.instruction_type);
+        processor(self);
     }
 
     pub fn cpu_step(&mut self) -> bool {
@@ -118,4 +120,45 @@ impl Cpu {
         }
         return true;
     }
+
+    pub fn get_cpu_flag(&self, flag: Flag) -> bool {
+        let registers_flag = self.registers.f;
+        match flag {
+            Flag::Z => {
+                return if bit(self.registers.f, 7) == 1 {
+                    true
+                } else {
+                    false
+                }
+            }
+            Flag::N => {
+                return if bit(self.registers.f, 6) == 1 {
+                    true
+                } else {
+                    false
+                }
+            }
+            Flag::H => {
+                return if bit(self.registers.f, 5) == 1 {
+                    true
+                } else {
+                    false
+                }
+            }
+            Flag::C => {
+                return if bit(self.registers.f, 4) == 1 {
+                    true
+                } else {
+                    false
+                }
+            }
+        }
+    }
+}
+
+pub enum Flag {
+    Z,
+    C,
+    N,
+    H,
 }

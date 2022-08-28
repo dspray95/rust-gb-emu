@@ -41,6 +41,10 @@ impl InstructionType {
 #[derive(Clone, Copy)]
 pub enum ConditionType {
     NONE,
+    NZ,
+    Z,
+    NC,
+    C,
 }
 #[derive(Clone, Copy)]
 pub enum AddressingMode {
