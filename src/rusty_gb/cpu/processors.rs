@@ -1,12 +1,9 @@
-use std::os::windows::process;
-
-use rust_gbe::emulator_cycles;
-
-use crate::rusty_gb::emulator;
+use crate::rusty_gb::emulator_cycles;
 
 // use super::super::emulator::Emulator::emulator_cycles;
-use super::instructions::instruction::{ConditionType, InstructionType};
+use super::instructions::instruction::{ConditionType, InstructionType, RegisterType};
 use super::Cpu;
+
 
 type Processor = fn(&mut Cpu);
 
@@ -30,7 +27,12 @@ pub fn process_jp(cpu: &mut Cpu) {
 }
 
 pub fn process_ld(cpu: &mut Cpu) {
-    return;
+    if cpu.destination_is_memory {
+        //LD (BC), A etc
+        if cpu.current_instruction.register_2 >= RegisterType::AF {
+
+        }
+    }
 }
 
 pub fn process_dec(cpu: &mut Cpu) {

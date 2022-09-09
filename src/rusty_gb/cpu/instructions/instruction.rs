@@ -48,11 +48,29 @@ pub enum ConditionType {
 }
 #[derive(Clone, Copy)]
 pub enum AddressingMode {
-    R,
     IMP,
-    D16,
+    R,
+    R_R,
     R_D8,
+    R_D16,
+    D8,
+    D16,
+    MR_R,
+    R_MR,
+    R_HLI,
+    R_HLD,
+    HLI_R,
+    HLD_R,
+    A8_R,
+    HL_SPR,
+    A16_R,
+    D16_R,
+    MR_D8,
+    MR,
+    R_A8,
+    R_A16, 
 }
+
 #[derive(Clone, Copy)]
 pub enum RegisterType {
     NONE,
@@ -98,5 +116,13 @@ impl Instruction {
             condition_type: condition_type.unwrap_or(ConditionType::NONE),
             param: param.unwrap_or(0),
         };
+    }
+
+    pub fn register_type_is_16_bit(register_type: RegisterType) -> bool{
+        if register_type == RegisterType::AF || register_type == RegisterType::BC || register_type == RegisterType::DE || register_type == RegisterType::HL {
+            return true;
+        } else {
+            return false
+        }
     }
 }

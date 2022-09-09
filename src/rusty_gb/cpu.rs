@@ -1,11 +1,11 @@
 #![allow(arithmetic_overflow)]
 
 use core::panic;
-
+use crate::rusty_gb::emulator_cycles;
 use instructions::instruction::Instruction;
 // use processors::get_processors;
 use registers::CpuRegisters;
-use rust_gbe::{bit, emulator_cycles};
+use rust_gbe::{bit};
 
 // use self::instructions::Instructions;
 
@@ -14,7 +14,7 @@ use self::instructions::{
     instruction::{AddressingMode, InstructionType},
 };
 
-use super::{bus::Bus, emulator::Emulator};
+use super::bus::Bus;
 
 mod instructions;
 mod processors;
@@ -22,11 +22,11 @@ mod registers;
 
 pub struct Cpu {
     pub(crate) registers: CpuRegisters,
-    fetched_data: u16, //current fetched data
-    mem_dest: u16,
-    dest_is_mem: bool,
     current_opcode: u8,
     current_instruction: Instruction,
+    fetched_data: u16, //current fetched data
+    destination_is_memory: bool,
+    memory_destination: u16,
     halted: bool,
     stepping: bool,
     bus: Bus,
@@ -39,8 +39,8 @@ impl Cpu {
         return Cpu {
             registers: CpuRegisters::new(),
             fetched_data: 0,
-            mem_dest: 0,
-            dest_is_mem: false,
+            memory_destination: 0,
+            destination_is_memory: false,
             current_opcode: 0,
             current_instruction: instruction_set[0],
             halted: false,
@@ -57,13 +57,17 @@ impl Cpu {
     }
 
     fn fetch_data(&mut self) {
-        self.mem_dest = 0;
-        self.dest_is_mem = false;
+        self.memory_destination = 0;
+        self.destination_is_memory = false;
 
         match self.current_instruction.addressing_mode {
             AddressingMode::IMP => return,
             AddressingMode::R => {
                 self.fetched_data = self.registers.read_reg(self.current_instruction.register_1);
+                return;
+            }
+            AddressingMode::R_R => {
+                self.fetched_data = self.registers.read_reg(self.current_instruction.register_2);
                 return;
             }
             AddressingMode::D16 => {
@@ -81,6 +85,18 @@ impl Cpu {
                 emulator_cycles(1);
                 self.registers.pc += 1;
                 return;
+            }
+            AddressingMode::R_A16 => {
+                let lo = self.bus.read(self.registers.pc);
+                emulator_cycles(1);
+                let hi = self.bus.read(self.registers.pc + 1);
+                emulator_cycles(1);
+
+                let address = lo as u16 | ((hi as u16) << 8);
+
+                self.registers.pc += 2;
+                self.fetched_data = self.bus.read(address) as u16;
+
             }
             _ => panic!("unknown addressing mode!"),
         }

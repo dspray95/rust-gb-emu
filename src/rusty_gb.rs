@@ -17,6 +17,10 @@ pub fn run() -> i64 {
     return 0;
 }
 
+pub fn emulator_cycles(n_cycles: u8){
+    return;
+}
+
 fn parse_args(args: &Vec<String>) -> bool {
     if args.len() < 2 {
         println!("only {} args provided.", args.len());
